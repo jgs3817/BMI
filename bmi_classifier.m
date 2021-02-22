@@ -178,46 +178,15 @@ rng(223);
 k = 10;
 n = length(X(:,1));
 
-indices = zeros(n,1);
-evenlySplit = 0;
-
-while(~evenlySplit)
-    for i = 1:k
-        if~(length(indices(indices==i))<((n/k)-2) || length(indices(indices==i))>((n/k)+2))
-            evenlySplit = 1;
-        end
-    end
-    indices = crossvalind('Kfold',n,k); 
-end
-
-split = zeros(1,k);
-for i = 1:k
-    split(i) = length(indices(indices==i));
-end
-
-% inner_indices = cell(1,k);
-% temp_indices = zeros(1,k);
-% for i = 1:k
-%     evenlySplit = 0;
-%     n = sum(split)-split(i);
-%     while(~evenlySplit)
-%         for j = 1:k
-%             if~(length(temp_indices(temp_indices==i))<((n/k)-2) || length(temp_indices(temp_indices==i))>((n/k)+2))
-%                 evenlySplit = 1;
-%             end
-%         end
-%         temp_indices = crossvalind('Kfold',n,k);
-%     end
-%     inner_indices{i} = temp_indices;
-% end
+c = cvpartition(n,'KFold',k);
 
 outer_accuracy = zeros(1,k);
 opt_models = cell(1,k);
 % Outer loop; k-fold CV where k=10 (generalisation error)
 for i = 1:k
     i
-    outer_train = X(indices~=i,:);
-    outer_test = X(indices==i,:);
+    outer_train = X(training(c,i),:);
+    outer_test = X(test(c,i),:);
     
     % Inner loop; minimise CV classification loss (model selection)
     opt_models{i} = fitcecoc(outer_train(:,1:98),outer_train(:,99),...
