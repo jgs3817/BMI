@@ -7,58 +7,148 @@ load('monkeydata_training.mat')
 angles = (pi/180)*[30 70 110 150 190 230 310 350];
 
 
-% PSTH for 1 neural unit over 100 trials for 1 direction
-direction = 1;
-neural_unit = 36;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tuning curves
 
-N = -1;
-for i = 1:length(trial(:,direction))
-    x = trial(i,direction).spikes(neural_unit,:);
-    temp_N = length(x);
-    if(temp_N > N)
-        N = temp_N;
+neural_unit = 42;
+
+tuning_curve = zeros(1,length(angles));
+tuning_curve_sd = zeros(1,length(angles));
+for direction = 1:length(angles)
+    % Get the average firing rate for all directions for this neural_unit
+    % across all trials
+    mean_rate = [];
+    for i = 1:length(trial(:,direction))
+        spks = trial(i,direction).spikes(neural_unit,:);
+        N = length(spks);
+        rate = 1000*sum(spks)/N;
+        mean_rate = [mean_rate rate];
     end
+    tuning_curve_sd(direction) = std(mean_rate);
+    tuning_curve(direction) = mean(mean_rate);    % Mean firing rate for this neural_unit for movement in this direction
 end
 
-all_spikes = [];
-for i = 1:length(trial(:,direction))
-    spks = trial(i,direction).spikes(neural_unit,:); % For the 36th neural unit
-    [~,index] = find(spks);
-    spks(spks>0) = index;
-    
-    %spks = [spks zeros(1,N-length(spks))];
-    all_spikes = [all_spikes spks];
-end
-
-all_spikes = all_spikes(all_spikes>0);
 fig = figure();
-nbins = 200;
-h = histogram(all_spikes,nbins);
-h.FaceColor = 'k';
-
-ax = gca;
-ax.XLim = [0 N];
-ax.XTick = [0:100:N];
-ax.YLabel.String = 'Spikes/Bin';
-ax.XLabel.String = 'Time (ms)';
-
-YTicks = yticklabels;
-
-bdur = N/nbins;
-nobins = 1000/bdur;
-
-newlab = cell(size(YTicks));
-for i = 1:length(YTicks)
-    lab = str2num(YTicks{i});
-    newlab{i} = num2str(round(nobins*(lab/length(trial(:,direction)))));
-end
-yticklabels(newlab);
-ax.YLabel.String = 'Firing rate (Hz)';
-ax.XLabel.String = 'Time (ms)';
-title({['Direction ' num2str(direction) ', Neural unit ' num2str(neural_unit)]})
+bar([1:1:length(angles)],tuning_curve)
+hold on
+er = errorbar([1:1:length(angles)],tuning_curve,tuning_curve-tuning_curve_sd,tuning_curve+tuning_curve_sd);
+er.Color = [0 0 0];                            
+er.LineStyle = 'none'; 
+ylim([0 inf]);
+xlabel('Direction')
+ylabel('Firing rate (Hz)')
+title({['Tuning curve for neural unit ' num2str(neural_unit)]})
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Spike density function for 1 neural unit over 100 trials for 1 direction
+% % NOT TESTED because it took a long time to run
+%
+% direction = 1;
+% neural_unit = 37;
+% 
+% N = -1;
+% for i = 1:length(trial(:,direction))
+%     x = trial(i,direction).spikes(neural_unit,:);
+%     temp_N = length(x);
+%     if(temp_N > N)
+%         N = temp_N;
+%     end
+% end
+% 
+% tstep = 0.005;
+% sigma = 0.01;
+% time = 0:tstep:N;
+% 
+% for i = 1:length(trial(:,direction))
+%     i
+%     spks = trial(i,direction).spikes(neural_unit,:);
+%     [~,index] = find(spks);
+%     spks(spks>0) = index;
+%     gauss = [];
+%     
+%     for j = 1:length(spks)
+%         mu = spks(j);   % centering Gaussian
+%         term1 = -.5 * ((time-mu)/sigma).^2;
+%         term2 = (sigma*sqrt(2*pi));
+%         gauss(j,:) = exp(term1)./term2;
+%     end
+%     sdf(i,:) = sum(gauss,1);
+% end
+% 
+% fig = figure();
+% ax = gca;
+% imagesc(sdf)
+% ax.YLabel.String = 'Trial';
+% ax.XLabel.String = 'Time (ms)';
+% colormap(jet)
+% 
+% % Average sdf across the trials
+% fig = figure();
+% ax = gca;
+% plot(mean(sdf),'Color','k','LineWidth',1.5)
+% ax.YLabel.String = 'Firing rate (Hz)';
+% ax.XLabel.String = 'Time (ms)';
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % PSTH for 1 neural unit over 100 trials for 1 direction
+% direction = 1;
+% neural_unit = 37;
+% 
+% N = -1;
+% for i = 1:length(trial(:,direction))
+%     x = trial(i,direction).spikes(neural_unit,:);
+%     temp_N = length(x);
+%     if(temp_N > N)
+%         N = temp_N;
+%     end
+% end
+% 
+% all_spikes = [];
+% for i = 1:length(trial(:,direction))
+%     spks = trial(i,direction).spikes(neural_unit,:);
+%     [~,index] = find(spks);
+%     spks(spks>0) = index;
+%     
+%     %spks = [spks zeros(1,N-length(spks))];
+%     all_spikes = [all_spikes spks];
+% end
+% 
+% all_spikes = all_spikes(all_spikes>0);
+% fig = figure();
+% nbins = 200;
+% h = histogram(all_spikes,nbins);
+% h.FaceColor = 'k';
+% 
+% ax = gca;
+% ax.XLim = [0 N];
+% ax.XTick = [0:100:N];
+% ax.YLabel.String = 'Spikes/Bin';
+% ax.XLabel.String = 'Time (ms)';
+% 
+% YTicks = yticklabels;
+% 
+% bdur = N/nbins;
+% nobins = 1000/bdur;
+% 
+% newlab = cell(size(YTicks));
+% for i = 1:length(YTicks)
+%     lab = str2num(YTicks{i});
+%     newlab{i} = num2str(round(nobins*(lab/length(trial(:,direction)))));
+% end
+% yticklabels(newlab);
+% ax.YLabel.String = 'Firing rate (Hz)';
+% ax.XLabel.String = 'Time (ms)';
+% title({['Direction ' num2str(direction) ', Neural unit ' num2str(neural_unit)]})
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % Raster plot for 1 neural unit over 100 trials for 1 direction
 % direction = 1;
 % neural_unit = 37;
@@ -83,6 +173,8 @@ title({['Direction ' num2str(direction) ', Neural unit ' num2str(neural_unit)]})
 % title({['Direction ' num2str(direction) ', Neural unit ' num2str(neural_unit)]})
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % Raster plot for 98 neural units over 1 trial for 1 direction
 % direction = 1;
 % trial_no = 1;
@@ -126,16 +218,10 @@ title({['Direction ' num2str(direction) ', Neural unit ' num2str(neural_unit)]})
 % xlabel('Time (ms)','FontSize',14)
 
 
-
-% lineLength = 1;
-% fig = figure();
-% for i = 1:length(angles)
-%     plot([0 lineLength*cos(angles(i))],[0 lineLength*sin(angles(i))],'LineWidth',1.0)
-%     hold on
-% end
-% title('Reaching angles')
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Reaching trajectories
+% lineLength = 150;
 % colors = ["#0072BD","#D95319","#EDB120","#7E2F8E","#77AC30","#4DBEEE","#A2142F","k"];
 % fig = figure();
 % for direction = 1:length(angles)
@@ -147,13 +233,17 @@ title({['Direction ' num2str(direction) ', Neural unit ' num2str(neural_unit)]})
 % 
 %         plot(y(1,:),y(2,:),'Color',colors(direction))
 %         hold on
+%         plot([0 lineLength*cos(angles(direction))],[0 lineLength*sin(angles(direction))],'LineWidth',1.5,'Color',colors(direction))
 %     end
 % end
-% title("Reaching trajectories in 8 directions")
+% % title("Reaching trajectories in 8 directions")
 
 
-% Visualise spike train data by finding mean across trial space
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Visualise spike train data by finding mean across trial space for all 8
+% % directions
+%
 % all_spikes = cell(1,length(angles));
 % all_y1 = cell(1,length(angles));
 % all_y2 = cell(1,length(angles));
@@ -222,6 +312,11 @@ title({['Direction ' num2str(direction) ', Neural unit ' num2str(neural_unit)]})
 % end
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Visualise spike train data by finding mean across trial space for 1
+% % direction
+
 % direction = 1;
 % N = -1;
 % for i = 1:length(trial(:,direction))
@@ -266,6 +361,8 @@ title({['Direction ' num2str(direction) ', Neural unit ' num2str(neural_unit)]})
 % stem(spike,'.','LineWidth',1.5)
 % title('Sum of 98 neural spikes')
 
+
+
 % direction = 1;
 % trial_no = 1;
 % x = trial(trial_no,direction).spikes;
@@ -286,28 +383,7 @@ title({['Direction ' num2str(direction) ', Neural unit ' num2str(neural_unit)]})
 % title('Sum of 98 neural spikes')
 
 
-% figure();
-% subplot(711)
-% plot([1:1:length(y(1,:))],y(1,:),'LineWidth',1.5)
-% title('X Trajectory')
-% subplot(712)
-% plot([1:1:length(y(2,:))],y(2,:),'LineWidth',1.5)
-% title('Y Trajectory')
-% subplot(713)
-% stem(x(1,:),'.','LineWidth',1.5)
-% title('Neuron unit 1')
-% subplot(714)
-% stem(x(2,:),'.','LineWidth',1.5)
-% title('Neuron unit 2')
-% subplot(715)
-% stem(x(3,:),'.','LineWidth',1.5)
-% title('Neuron unit 3')
-% subplot(716)
-% stem(x(4,:),'.','LineWidth',1.5)
-% title('Neuron unit 4')
-% subplot(717)
-% stem(x(5,:),'.','LineWidth',1.5)
-% title('Neuron unit 5')
+
 
 
 
