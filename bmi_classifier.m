@@ -1,4 +1,11 @@
-%% Coursework
+%% Potential improvements
+
+% Get rid of nested CV and just do regular CV (worse generalisation but
+% much faster training time)
+
+% Reduce inner CV loop iterations (similar to above)
+
+%% Coursework (61 minutes, 100% accuracy)
 % Same as below, but now only take spikes between 300 and (end-100)ms
 
 clear all; close all; clc;
@@ -106,7 +113,7 @@ finish = datestr(now,'HH:MM:SS');
 start
 finish
 
-%% Coursework (61 minutes)
+%% Coursework (61 minutes, 100% accuracy)
 
 clear all; close all; clc;
 
