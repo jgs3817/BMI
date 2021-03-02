@@ -4,6 +4,8 @@
 
 clear all; close all; clc;
 
+start = datestr(now,'HH:MM:SS');
+
 load('monkeydata_training.mat')
 
 % Set random number generator
@@ -25,7 +27,7 @@ axis square
 grid
 
 % Train Model
-modelParameters = positionEstimatorTraining(trainingData);
+modelParameters = ECOC_positionEstimatorTraining(trainingData);
 
 for tr=1:size(testData,1)
     display(['Decoding block ',num2str(tr),' out of ',num2str(size(testData,1))]);
@@ -42,11 +44,11 @@ for tr=1:size(testData,1)
 
             past_current_trial.startHandPos = testData(tr,direc).handPos(1:2,1); 
             
-            if nargout('positionEstimator') == 3
-                [decodedPosX, decodedPosY, newParameters] = positionEstimator(past_current_trial, modelParameters);
+            if nargout('ECOC_positionEstimator') == 3
+                [decodedPosX, decodedPosY, newParameters] = ECOC_positionEstimator(past_current_trial, modelParameters);
                 modelParameters = newParameters;
-            elseif nargout('positionEstimator') == 2
-                [decodedPosX, decodedPosY] = positionEstimator(past_current_trial, modelParameters);
+            elseif nargout('ECOC_positionEstimator') == 2
+                [decodedPosX, decodedPosY] = ECOC_positionEstimator(past_current_trial, modelParameters);
             end
             
             decodedPos = [decodedPosX; decodedPosY];
@@ -65,3 +67,8 @@ end
 legend('Decoded Position', 'Actual Position')
 
 RMSE = sqrt(meanSqError/n_predictions)
+
+finish = datestr(now,'HH:MM:SS');
+
+start
+finish
