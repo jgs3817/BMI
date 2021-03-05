@@ -1,31 +1,70 @@
 %% Task 1: Linear SVM classifier
 
+% Scroll to end of this section to see a short discussion of how this
+% relates to our BMI coursework
+
 clear all; close all; clc;
 
 load('data1.mat')
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The data1.mat file contains two variables: X and y
+% X is a 51x2 matrix
+% y is a 51x1 matrix
+%
+% 51 represents the number of observations we have (how much data we have)
+%
+% The columns of X (i.e. 2) represents the number of features we have. Here,
+% we are not told what they refer to. But as an example, imagine that we are
+% given two objects: a steel ball and a plastic cube. One of the features
+% we measure could be temperature, and another one could be weight
+%
+% The colums of y (i.e. 1) represents which class the observation i belongs
+% to. In here, we only have two classes: either '1' or '0'
+%
+% For a classifier, we want to find some hyperplane (basically a line in
+% 2D) which can split our classes well
+%
+% If you plot the data on the feature space, it's really easy for us to
+% see that there will be a clear line separating the two classes
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 start = datestr(now,'HH:MM:SS');
 
-% % Plotting data (2D feature space defined by columns)
-% fig = figure();
-% plot(X(y==1,1),X(y==1,2),'ko','LineWidth',1.5)
-% hold on
-% plot(X(y==0,1),X(y==0,2),'b*','LineWidth',1.5)
-% legend('Spam','Non-spam','FontSize',16,'Location','northwest')
-% ax = gca;
-% ax.FontSize = 16; 
-% ylabel('X(:,2)','FontSize',16)
-% xlabel('X(:,1)','FontSize',16)
+% Plotting data (2D feature space defined by columns)
+fig = figure();
+plot(X(y==1,1),X(y==1,2),'ko','LineWidth',1.5)
+% Here, I am indexing the matrix X(i,j). In thise case, my i is 
+% 'y==1' which returns a vector of '1's or '0's depending on whether
+% the element in the vector y is 1 or 0. In other words, I am extracting
+% all the observations from X which belong to object 1.
+% Then, I plot my feature 1 on the x-axis, and feature 2 on the y-axis
+
+hold on
+plot(X(y==0,1),X(y==0,2),'b*','LineWidth',1.5)
+legend('Spam','Non-spam','FontSize',16,'Location','northwest')
+ax = gca;
+ax.FontSize = 16; 
+ylabel('X(:,2)','FontSize',16)
+xlabel('X(:,1)','FontSize',16)
 
 C = 1;
+% We train our model by inputting our X data and y labels. The algorithm
+% will then find a hyperplane to split the classes. Note that y is
+% categorical data; it's either '1' or '0'. Not continuous data like X
 model = svmTrain(X,y,C,@linearKernel);
 
+% We use our model to predict which class each observation in X belongs to
 pred = svmPredict(model,X);
 
+% Some evaluation metrics
 n_correct = sum(pred==y);
 n_wrong = length(y) - n_correct;
 accuracy = n_correct*100/length(y);
 
+% Read from left to right, top to bottom:
+% True positive, False negative, False positive, True negative
+% Elements on the diagonal means we classified them correctly
 % LR,TB: TP, FN, FP, TN
 confusion_matrix = zeros(2,2);
 for i = 1:length(pred)
@@ -40,12 +79,16 @@ for i = 1:length(pred)
     end
 end
 
-
+% Some more evaluation metrics
 ACC = (confusion_matrix(1,1)+confusion_matrix(2,2))/(sum(sum(confusion_matrix)));
 TPR = confusion_matrix(1,1)/sum(confusion_matrix(:,1));
 FPR = 1 - confusion_matrix(2,2)/sum(confusion_matrix(:,2));
 ACC_0 = 1/length(unique(y));
 kappa = (ACC-ACC_0)/(1-ACC_0);
+
+% ROC space. A point on the top left is good. The 45 degree line means that
+% our model is just as good as randomly classifying our data. Any point
+% below the line means our model is worse than random.
 
 % fig = figure();
 % plot([0 1],[0 1],'-.k','LineWidth',1.5)
@@ -63,7 +106,13 @@ subplot(131)
 plot(X(y==1,1),X(y==1,2),'ko','LineWidth',1.5)
 hold on
 plot(X(y==0,1),X(y==0,2),'b*','LineWidth',1.5)
+
 % Make classification predictions over a grid of values
+% This is an easy way to find the hyperplane that our model found. We
+% basically fill in "artificial" data for a bunch of x-axis and y-axis
+% values, and let our model predict whether that coordinate belongs to
+% class 1 or class 0. Based on this, we can find the line separating all
+% the '1' values and '0' values
 x1plot = linspace(min(X(:,1)), max(X(:,1)), 500)';
 x2plot = linspace(min(X(:,2)), max(X(:,2)), 500)';
 [X1, X2] = meshgrid(x1plot, x2plot);
@@ -83,6 +132,7 @@ ax.FontSize = 16;
 ylabel('X(:,2)','FontSize',16)
 xlabel('X(:,1)','FontSize',16)
 
+% Just another plot to show the incorrect predictions (red)
 subplot(132);
 plot(X(pred==1,1),X(pred==1,2),'ko','LineWidth',1.5)
 hold on
@@ -117,17 +167,62 @@ plot([1 1],[nan nan],'r+','LineWidth',1.5);
 set(hSub, 'Visible', 'off');
 legend(hSub,'Spam','Non-spam','Incorrect predictions','FontSize',16,'Location','northeast');
 
-
-
-% Not 100% accuracy because there is one data point on the wrong side of
-% the boundary. Limitations: only able to learn a linear boundary. Other
-% evaluation methods like cross validation can be used to determine
-% accuracy
-
 finish = datestr(now,'HH:MM:SS');
 
-start
-finish
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For our BMI coursework, we can kind of treat the problem the same way.
+% Instead of 2 classes, however, we have 8 classes for the 8 reaching
+% angles (i.e. our y variable should have '1','2',...'8'). Our y variable
+% should also have 800 observations (100 trials for each of the 8
+% directions)
+%
+% The part that is more challenging is figuring out what to use as our x.
+% What we are given is neural spike data of variable length N. We also have
+% 98 neural units, 8 directions, and 100 trials. This makes our problem 
+% space quite big. A straightforward data matrix x would be of size 
+% 100x8x98xN. 
+%
+% We have a few problems with this:
+%
+% (i) This is 4D data. As far as I know the classifier only accepts 2D data
+%
+% (ii) N is variable. How do we choose what value to use? Do we find the
+% maximum spike train length and set all others to be the same length? If
+% so, do we fill the remainder with 0s? This might introduce some problems
+% in the future when training the model
+% 
+% Solution to (i):
+% Luckily for us there is a simple way to reduce the dimensions of the
+% data. We do have 100 trials for each of the 8 directions, but this can
+% just be considered as 800 trials. Nothing significant changes. Now we
+% have 3D data of size 800x98xN
+%
+% Solution to (i) and (ii):
+% Instead of using the entire spike train which is not only of different
+% lengths, but also probably not very informative (it's just 1s or 0s), we
+% can find the spike rate of a particular neural unit. By doing this, our
+% 98xN matrix becomes 98 scalar values. Now we are left with 2D data of size
+% 800x98. Realise that this means 98 features with 800 observations
+%
+% As Alex mentioned before, the data that comes before the action starts is
+% also important. To solve this, we can also find the spike rate for the
+% first 320 samples of the data (equivalent to 320 ms) and use it as a 
+% "covariate". Doing this for all the neural units, we get another 98 
+% scalar values.
+%
+% We can append this new set of values to our original data to obtain a
+% 800x196 matrix. I tried this method on the ECOC classifier and it led to
+% a 34% decrease in the MSE, with only a 6 second increase in the run time
+% of the code. Sounds pretty good to me.
+%
+% There are a lot of other ways to handle the data which we can discuss in
+% our next meeting. But in the meantime, I think this method is quite
+% straightforward and should give us a good understanding of how to solve
+% the classification problem (regression problem is another thing which we
+% won't worry for now lol)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %% Non-linear SVM classifier
 
