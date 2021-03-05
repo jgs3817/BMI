@@ -26,7 +26,9 @@ load('data1.mat')
 % 2D) which can split our classes well
 %
 % If you plot the data on the feature space, it's really easy for us to
-% see that there will be a clear line separating the two classes
+% see that there will be a clear line separating the two classes. You can
+% think of feature 1 as being the x-axis and feature 2 being the y-axis (or
+% vice versa, doesn't matter)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 start = datestr(now,'HH:MM:SS');
@@ -34,11 +36,12 @@ start = datestr(now,'HH:MM:SS');
 % Plotting data (2D feature space defined by columns)
 fig = figure();
 plot(X(y==1,1),X(y==1,2),'ko','LineWidth',1.5)
-% Here, I am indexing the matrix X(i,j). In thise case, my i is 
-% 'y==1' which returns a vector of '1's or '0's depending on whether
-% the element in the vector y is 1 or 0. In other words, I am extracting
-% all the observations from X which belong to object 1.
-% Then, I plot my feature 1 on the x-axis, and feature 2 on the y-axis
+% Here, I am indexing the matrix X(i,j). In this case, my i is 
+% 'y==1' which returns a vector of '1's or '0's (true or false)
+% depending on whether the element in the vector y is 1 or 0. In other 
+% words, I am extracting all the observations from X which belong to 
+% object 1. Then, I plot my feature 1 on the x-axis, and feature 2 
+% on the y-axis
 
 hold on
 plot(X(y==0,1),X(y==0,2),'b*','LineWidth',1.5)
