@@ -51,7 +51,7 @@ for i = 1:length(my_rng)
     end
 
     % Train Model
-    modelParameters = ECOC196_positionEstimatorTraining(trainingData);
+    modelParameters = ECOC196Bagged_positionEstimatorTraining(trainingData);
 
     for tr=1:size(testData,1)
 %         display(['Decoding block ',num2str(tr),' out of ',num2str(size(testData,1))]);
@@ -68,11 +68,11 @@ for i = 1:length(my_rng)
 
                 past_current_trial.startHandPos = testData(tr,direc).handPos(1:2,1); 
 
-                if nargout('ECOC196_positionEstimator') == 3
-                    [decodedPosX, decodedPosY, newParameters] = ECOC196_positionEstimator(past_current_trial, modelParameters);
+                if nargout('ECOC196Bagged_positionEstimator') == 3
+                    [decodedPosX, decodedPosY, newParameters] = ECOC196Bagged_positionEstimator(past_current_trial, modelParameters);
                     modelParameters = newParameters;
-                elseif nargout('ECOC196_positionEstimator') == 2
-                    [decodedPosX, decodedPosY] = ECOC196_positionEstimator(past_current_trial, modelParameters);
+                elseif nargout('ECOC196Bagged_positionEstimator') == 2
+                    [decodedPosX, decodedPosY] = ECOC196Bagged_positionEstimator(past_current_trial, modelParameters);
                 end
 
                 decodedPos = [decodedPosX; decodedPosY];

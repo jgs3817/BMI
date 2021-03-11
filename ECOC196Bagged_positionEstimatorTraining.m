@@ -1,4 +1,4 @@
-function [modelParameters] = ECOC196_positionEstimatorTraining(training_data)
+function [modelParameters] = ECOC196Bagged_positionEstimatorTraining(training_data)
   
     n_trials = length(training_data(:,1));
     n_units = length(training_data(1,1).spikes(:,1));
@@ -46,29 +46,34 @@ function [modelParameters] = ECOC196_positionEstimatorTraining(training_data)
     X = [x y];
 
     rng(223);
-    k = 10;
-    n = length(X(:,1));
-
-    c = cvpartition(n,'KFold',k);
-
-    max_accuracy = -1;
-    for i = 1:k
-        train = X(training(c,i),:);
-        testing = X(test(c,i),:);
-
+    
+    n_bootstraps = 15;
+    bootstrap_size = length(y);
+    r = randi([1 length(y)],n_bootstraps,bootstrap_size);
+    k = 5;
+        
+    all_accuracy = zeros(1,n_bootstraps);
+    all_models = cell(1,n_bootstraps);
+    for i = 1:n_bootstraps
+        my_X = X(r(i,:),:);
+        c = cvpartition(bootstrap_size,'KFold',k);
+        
+        train = my_X(training(c,1),:);
+        testing = my_X(test(c,1),:);
+        
         model = fitcecoc(train(:,1:196),train(:,197));
         pred = predict(model,testing(:,1:196));
-
+        
         n_correct = sum(pred==testing(:,197));
-        accuracy = n_correct*100/length(pred);
-    
-        if(accuracy > max_accuracy)
-            max_accuracy = accuracy;
-            opt_model = model;
-        end
+        all_accuracy(i) = n_correct*100/length(pred);
+        all_models{i} = model;
     end
 
-    modelParameters = cell(1,2);
-    modelParameters{1} = opt_model;
-    modelParameters{2} = mean_trajectory;
+    [~,optimal_idx] = max(all_accuracy);
+    modelParameters = cell(1,5);
+    modelParameters{1} = all_models;
+    modelParameters{2} = all_accuracy;
+    modelParameters{3} = mean_trajectory;
+    modelParameters{4} = n_bootstraps;
+    modelParameters{5} = all_models{optimal_idx};
 end
