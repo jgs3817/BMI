@@ -1,13 +1,7 @@
-function [x, y] = ECOC196_positionEstimator(test_data, modelParameters)
-
-%     past_current_trial.trialId = testData(tr,direc).trialId;
-%     past_current_trial.spikes = testData(tr,direc).spikes(:,1:t); 
-%     past_current_trial.decodedHandPos = decodedHandPos;
-%     past_current_trial.startHandPos = testData(tr,direc).handPos(1:2,1);
+function [x, y] = positionEstimator(test_data, modelParameters)
 
     model = modelParameters{1};
-    % tuning_curves = modelParameters{2};
-    mean_trajectory = modelParameters{3};
+    mean_trajectory = modelParameters{2};
 
     n_units = length(test_data.spikes(:,1));
     time_step = length(test_data.spikes(1,:));
