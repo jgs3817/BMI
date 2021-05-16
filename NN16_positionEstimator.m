@@ -1,5 +1,13 @@
 function [x, y] = NN16_positionEstimator(test_data, modelParameters)
 
+    % Input:
+    % 1. test_data: Data matrix of structures containing spikes as a 98*T matrix
+    % and hand position as a 3*T matrix
+    % 2. modelParameters: Parameters of the trained model from
+    % NN16_positionEstimatorTraining
+    %
+    % Output: Predicted x and y coordinates at a time step
+
     n_units = length(test_data.spikes(:,1));
     n_angles = 8;
     time_step = length(test_data.spikes(1,:));

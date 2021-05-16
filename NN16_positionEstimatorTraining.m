@@ -1,5 +1,11 @@
 function [modelParameters] = NN16_positionEstimatorTraining(training_data)
   
+    % Input: Data matrix of structures containing spikes as a 98*T matrix
+    % and hand position as a 3*T matrix
+    %
+    % Output: Parameters of the trained model
+    
+    % Constants
     n_trials = length(training_data(:,1));
     n_units = length(training_data(1,1).spikes(:,1));
     n_angles = 8;
@@ -46,6 +52,7 @@ function [modelParameters] = NN16_positionEstimatorTraining(training_data)
     net.trainParam.showWindow = false;
     net.trainParam.time = 1;
 
+    % Training NN for x and y coordinates for each direction
     dir = 1:n_trials:size(xPos,1);
     for i = 1:length(dir)
         my_xPos = xPos(dir(i):dir(i)+n_trials-1,:);

@@ -2,7 +2,8 @@
 % Edited version of "testFunction_for_students_MTb"
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ECOC with 
+% SVMs trained with an ECOC framework
+%
 % x: Nx98 (spike rates of 98 neural units)
 % y: Nx1 (one of eight directions)
 % 
@@ -13,7 +14,7 @@ clear all; close all; clc;
 
 load('monkeydata_training.mat')
 
-% showPlots = 1 to show the predicted and actual trajectories
+% showPlots = 1 % to show the predicted and actual trajectories
 showPlots = 0;
 
 % Set random seeds

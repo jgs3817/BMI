@@ -1,13 +1,15 @@
 function [x, y] = ECOC_positionEstimator(test_data, modelParameters)
 
-%     past_current_trial.trialId = testData(tr,direc).trialId;
-%     past_current_trial.spikes = testData(tr,direc).spikes(:,1:t); 
-%     past_current_trial.decodedHandPos = decodedHandPos;
-%     past_current_trial.startHandPos = testData(tr,direc).handPos(1:2,1);
-
+    % Input:
+    % 1. test_data: Data matrix of structures containing spikes as a 98*T matrix
+    % and hand position as a 3*T matrix
+    % 2. modelParameters: Parameters of the trained model from
+    % ECOC_positionEstimatorTraining
+    %
+    % Output: Predicted x and y coordinates at a time step
+    
     model = modelParameters{1};
-    % tuning_curves = modelParameters{2};
-    mean_trajectory = modelParameters{3};
+    mean_trajectory = modelParameters{2};
 
     n_units = length(test_data.spikes(:,1));
     time_step = length(test_data.spikes(1,:));

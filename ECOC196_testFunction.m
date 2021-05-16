@@ -2,10 +2,12 @@
 % Edited version of "testFunction_for_students_MTb"
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ECOC with 
+% SVMs trained with an ECOC framework
+%
 % x: Nx(98*2) (first 98 columns are for the spike rates of the entire 
 % spike length data of 98 neural units; next 98 columns are for the 
 % spike rates between 0 and 320 ms)
+%
 % y: Nx1 (one of eight directions)
 % 
 % Output of ECOC is used to obtain mean trajectory in that direction
@@ -16,7 +18,7 @@ clear all; close all; clc;
 load('monkeydata_training.mat')
 
 % showPlots = 1 to show the predicted and actual trajectories
-showPlots = 0;
+showPlots = 1;
 % showWhich = 0 to show all plots
 showWhich = 0;
 
@@ -27,7 +29,6 @@ starts = cell(2,length(my_rng));
 all_RMSE = zeros(1,length(my_rng));
 
 for i = 1:length(my_rng)
-    i
     starts{1,i} = datestr(now,'HH:MM:SS');
     % Set random number generator
     rng(my_rng(i));
