@@ -2,10 +2,14 @@
 % Edited version of "testFunction_for_students_MTb"
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% NN16 + ECOC
-% Total runtime: 2757s
+% Prediction of arm trajectory using NN given a predicted reaching angle
+% from classifier
+% Classification done by SVMs under ECOC framework
+% Regression done using 16 NNs (2 NNs for x and y coordinates for each
+% reaching angle)
+%
 % Prediction takes VERY long to run (97.8% of run time)
-% Find out WHY and improve this
+% Many iterations during testing
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all; close all; clc;
@@ -20,11 +24,11 @@ showWhich = 0;
 % Set random seeds
 my_rng = [2013];
 % my_rng = [2013 223 789 123 2021 125 112 234 377 2000];
+% my_rng = [2013 223 789 123 2021];
 starts = cell(2,length(my_rng));
 all_RMSE = zeros(1,length(my_rng));
 
 for i = 1:length(my_rng)
-    i
     starts{1,i} = datestr(now,'HH:MM:SS');
     % Set random number generator
     rng(my_rng(i));
@@ -53,7 +57,7 @@ for i = 1:length(my_rng)
     disp('Finished training')
     
     for tr=1:size(testData,1)
-        display(['Decoding block ',num2str(tr),' out of ',num2str(size(testData,1))]);
+%         display(['Decoding block ',num2str(tr),' out of ',num2str(size(testData,1))]);
 %         pause(0.001)
         for direc=randperm(8) 
             decodedHandPos = [];

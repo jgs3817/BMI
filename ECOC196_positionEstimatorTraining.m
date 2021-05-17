@@ -1,11 +1,17 @@
 function [modelParameters] = ECOC196_positionEstimatorTraining(training_data)
   
+    % Input: Data matrix of structures containing spikes as a 98*T matrix
+    % and hand position as a 3*T matrix
+    %
+    % Output: Parameters of the trained model
+    
+    % Constants
     n_trials = length(training_data(:,1));
     n_units = length(training_data(1,1).spikes(:,1));
     n_angles = 8;
 
     % The testing set may contain a longer spike train than the maximum
-    % in the training set, so max_N is set as 1000 based on prior observation 
+    % in the training set, so max_N is set as 1000 a priori
     max_N = 1000;
     
     % Structure data
@@ -14,6 +20,7 @@ function [modelParameters] = ECOC196_positionEstimatorTraining(training_data)
     y = repmat([1:1:n_angles],n_trials,1);
     y = y(:);
     
+    % Can be vectorised to decrease run time
     for direction = 1:n_angles
         x_movement = zeros(length(training_data(:,direction)),max_N);
         y_movement = zeros(length(training_data(:,direction)),max_N);
@@ -43,24 +50,35 @@ function [modelParameters] = ECOC196_positionEstimatorTraining(training_data)
         mean_trajectory(direction,3,:) = mean(z_movement,1);
     end
 
+    % Variable X contains both the predictors and response variable
     X = [x y];
 
     rng(223);
-    k = 10;
+    
+    % 5-fold cross validation
+    k = 5;
     n = length(X(:,1));
-
     c = cvpartition(n,'KFold',k);
 
+    % Model selection using k-fold CV
     max_accuracy = -1;
     for i = 1:k
         train = X(training(c,i),:);
         testing = X(test(c,i),:);
 
-        model = fitcecoc(train(:,1:196),train(:,197));
+        % Training learners with an ECOC framework
+        
+        model = fitcecoc(train(:,1:196),train(:,197)); % RMSE = 10.63
+%         model = fitcecoc(train(:,1:196),train(:,197),'Learners','tree'); % RMSE = 31.39
+%         model = fitcecoc(train(:,1:196),train(:,197),'Learners','discriminant'); % RMSE = 14.38
+%         model = fitcecoc(train(:,1:196),train(:,197),'Learners','kernel'); % RMSE = 110.35
+%         model = fitcecoc(train(:,1:196),train(:,197),'Learners','knn'); % RMSE = 18.28
+%         model = fitcecoc(train(:,1:196),train(:,197),'Learners','naivebayes'); % RMSE = 105.55
+        
         pred = predict(model,testing(:,1:196));
 
         n_correct = sum(pred==testing(:,197));
-        accuracy = n_correct*100/length(pred);
+        accuracy = n_correct*100/length(pred);  % classification accuracy
     
         if(accuracy > max_accuracy)
             max_accuracy = accuracy;

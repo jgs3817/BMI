@@ -1,4 +1,8 @@
-%% Coursework
+%% Plots shown in report
+% a) Time series data of x and y coordinates moving in the 30/180 pi
+% direction
+%
+% b) Reaching trajectories in 8 angles
 
 clear all; close all; clc;
 
@@ -6,6 +10,84 @@ load('monkeydata_training.mat')
 
 angles = (pi/180)*[30 70 110 150 190 230 310 350];
 
+max_N = 1000;
+
+n_trials = length(trial(:,1));
+n_units = length(trial(1,1).spikes(:,1));
+n_angles = 8;
+
+mean_trajectory = zeros(n_angles,3,max_N);
+x = zeros(n_trials*n_angles,2*n_units);
+y = repmat([1:1:n_angles],n_trials,1);
+y = y(:);
+
+for direction = 1:n_angles
+    x_movement = zeros(length(trial(:,direction)),max_N);
+    y_movement = zeros(length(trial(:,direction)),max_N);
+    z_movement = zeros(length(trial(:,direction)),max_N);
+    for i = 1:n_trials
+        xPos = trial(i,direction).handPos(1,:) - trial(i,direction).handPos(1,1);
+        yPos = trial(i,direction).handPos(2,:) - trial(i,direction).handPos(2,1);
+        zPos = trial(i,direction).handPos(3,:) - trial(i,direction).handPos(3,1);
+
+        x_movement(i,:) = [xPos xPos(end)*ones(1,max_N-length(xPos))];
+        y_movement(i,:) = [yPos yPos(end)*ones(1,max_N-length(yPos))];
+        z_movement(i,:) = [zPos zPos(end)*ones(1,max_N-length(zPos))];
+        for neural_unit = 1:n_units
+            spks = trial(i,direction).spikes(neural_unit,:);
+            spks = 1000*sum(spks)/length(spks);
+            
+            idx = ((direction-1)*length(trial(:,direction))) + i;
+            x(idx,neural_unit) = spks;
+            
+            spks = trial(i,direction).spikes(neural_unit,1:320);
+            spks = 1000*sum(spks)/320;
+            x(idx,n_units+neural_unit) = spks;
+        end
+    end
+    mean_trajectory(direction,1,:) = mean(x_movement,1);
+    mean_trajectory(direction,2,:) = mean(y_movement,1);
+    mean_trajectory(direction,3,:) = mean(z_movement,1);
+end
+
+figure();
+hold on
+plot(squeeze(mean_trajectory(1,1,:)),'LineWidth',1.0)
+plot(squeeze(mean_trajectory(1,2,:)),'LineWidth',1.0)
+
+fontSize = 15;
+ax = gca;
+ax.FontSize = fontSize;
+ylabel('Coordinate','FontSize',fontSize)
+xlabel('Time (ms)','FontSize',fontSize)
+legend('x coordinates','y coordinates','FontSize',fontSize,'Location','northwest')
+
+% Reaching trajectories
+lineLength = 125;
+colors = ["#0072BD","#D95319","#EDB120","#7E2F8E","#77AC30","#4DBEEE","#A2142F","k"];
+fig = figure();
+for direction = 1:length(angles)
+    for i = 1:length(trial(:,direction))
+        y = trial(i,direction).handPos(1:2,:);
+
+        y(1,:) = y(1,:) - y(1,1);
+        y(2,:) = y(2,:) - y(2,1);
+
+        plot(y(1,:),y(2,:),'Color',colors(direction))
+        hold on
+        plot([0 lineLength*cos(angles(direction))],[0 lineLength*sin(angles(direction))],'LineWidth',1.5,'Color',colors(direction))
+    end
+end
+
+fontSize = 15;
+ax = gca;
+ax.FontSize = fontSize;
+ylabel('y coordinate','FontSize',fontSize)
+xlabel('x coordinate','FontSize',fontSize)
+xlim([-125 125])
+ylim([-125 125])
+
+%% Pre-competition homework
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
