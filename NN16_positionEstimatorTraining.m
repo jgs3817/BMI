@@ -47,7 +47,7 @@ function [modelParameters] = NN16_positionEstimatorTraining(training_data)
 
     rng(223);
     trainFcn = 'trainscg';
-    hiddenLayers = [100 200 100];
+    hiddenLayers = [200 100];
     net = fitnet(hiddenLayers,trainFcn);
     net.trainParam.showWindow = false;
     net.trainParam.time = 1;
